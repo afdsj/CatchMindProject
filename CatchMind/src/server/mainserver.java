@@ -14,10 +14,11 @@ import utils.Protocol;
 
 public class mainserver {
 	
+	// 사용자가 그린 
 	public ArrayList<String> userList = new ArrayList<>();
-	private final static String TAG = "MainServer : ";
+	private final static String TAG = "MainServer : "; // 상수 필드 (인터페이스,,?
 	
-	ServerSocket serverSocket;
+	ServerSocket serverSocket; // 서버프로그램에서 사용하는 소켓으로 ServerSocket 객체 생성하여 클라이언트가 연결해오는것을 기다림
 	public static Vector<Socket> vc;
 	String trunWord = null;
 	int turn = 0;

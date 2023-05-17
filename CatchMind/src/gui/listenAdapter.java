@@ -1,6 +1,8 @@
 package gui;
 
-//main에 리스너를 넣기위한 어댑터
+// import 불러와지는게 이상함 ,, 
+
+//main에 리스너를 넣기위한 어댑터 //클래스에서 인터페이스를 상속 받을 때 implements 키워드 사용
 public abstract class listenAdapter implements KeyListener, MouseListener, ActionListener{
 	
 	@Override
