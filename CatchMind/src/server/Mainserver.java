@@ -1,5 +1,7 @@
 package server;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
@@ -10,16 +12,18 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import Paint.MyCanvas;
+import gui.CountDown;
+import gui.GameRoomFrame;
 import utils.Protocol;
 
-public class mainserver {
+public class Mainserver {
 	
 	// 사용자가 그린 
 	public ArrayList<String> userList = new ArrayList<>(); //제네릭
 	private final static String TAG = "MainServer : "; // 상수 필드 (인터페이스,,?
 	
 	ServerSocket serverSocket; // 서버프로그램에서 사용하는 소켓으로 ServerSocket 객체 생성하여 클라이언트가 연결해오는것을 기다림
-	public static Vector<Socket> vc;
+	public static Vector<SocketThread> vc;
 	String trunWord = null;
 	int turn = 0;
 	public boolean 정답;
@@ -27,7 +31,7 @@ public class mainserver {
 	private int allTurn = 2;
 	private int currentTurn = 0;
 	
-	public void MainServer() throws Exception{ //오류나서 void 추가
+	public Mainserver() throws Exception{ 
 		vc = new Vector<>();
 		serverSocket = new ServerSocket(8892);
 		System.out.println(TAG + "서버접속완료");
@@ -65,10 +69,10 @@ public class mainserver {
 		public void run() {
 			try {
 				br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-				br = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+				bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 				
 				String msg = "";
-				While ((msg = br.readLine()) != null){
+				while ((msg = br.readLine()) != null) {
 					System.out.println(TAG + "클라이언트 : " + msg);
 					router(msg);
 				}
@@ -83,6 +87,7 @@ public class mainserver {
 			
 			String[]msg = msgLine.split(":");
 			String protocol = msg[0];
+			
 			if(protocol.equals(Protocol.CHAT)) {
 				String username = msg[1];
 				String chatMsg = msg[2];
@@ -97,9 +102,9 @@ public class mainserver {
 					System.out.println(TAG + "메시지 : " + chatMsg + "turnWord : " + turnWord);
 					chattingMsg(username + ":" + chatMsg); //ta뿌리기
 				}
-			}else if(protocol.equals(protocol.STARTGAME)) {
+			}else if(protocol.equals(Protocol.STARTGAME)) {
 				startGame();
-			}else if(protocol.equals(protocol.DRAW)) {
+			}else if(protocol.equals(Protocol.DRAW)) {
 				//System.out.println(TAG + msg[1] + "DRAW 프로토콜 확인);
 				
 				// client에게 샌드해줘 (샌드 뜻이 가상계좌로 송금할 수 있는 앱?)
@@ -113,7 +118,7 @@ public class mainserver {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}else if(protocol.equals(protocol.CONNECT)) {
+			}else if(protocol.equals(Protocol.CONNECT)) {
 				//username - msg[1]
 				
 				userList.add(msg[1]);
@@ -127,14 +132,14 @@ public class mainserver {
 					for(SocketThread socketThread : vc) {
 						if(true) {
 							socketThread.bw.write(Protocol.CONNECT + ":" + getUserListParse() + "\n");
-							System.out.pritln(TAG + "check userList 확인 : " + getUserListParse());
+							System.out.println(TAG + "check userList 확인 : " + getUserListParse());
 							socketThread.bw.flush();
 						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}else if(protocol.equals(protocol.ALLERASER)) {
+			}else if(protocol.equals(Protocol.ALLERASER)) {
 				allEraser();
 			}		
 	} // router 닫힘
@@ -194,7 +199,7 @@ public class mainserver {
 							} 
 						}
 					}else {
-						for(int i = 0l i < allTurn; i++) {
+						for(int i = 0; i < allTurn; i++) {
 							vc.get(i).bw.write(Protocol.ENDGAME + ":" + "false" + "\n");
 							vc.get(i).bw.flush();
 						}
@@ -213,12 +218,13 @@ public class mainserver {
 		// 제시어를 맞추면 다음턴으로 넘어가기
 		public void nextTurn() {
 			startGame();
+			
 		}
 	} // Thread 닫힘
 	
-	public static void main(Stirng[] args) {
+	public static void main(String[] args) {
 		try {
-			new MainServer();
+			new Mainserver();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
